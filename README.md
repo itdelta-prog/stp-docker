@@ -11,17 +11,9 @@ project-root/
 
 ---
 
-# 🚀 Setup Instructions (Simplified)
+# 🚀 Setup Instructions
 
-### 1. Clone repositories
-
-```bash
-git clone git@github.com:itdelta-prog/laravel-keyword-planner.git planner
-git clone git@github.com:itdelta-prog/pytrends-api.git trends
-git clone git@github.com:itdelta-agency/php-scraper.git scraper
-```
-
----
+### 1. Clone repository
 
 ### 2. Laravel (Planner API)
 
