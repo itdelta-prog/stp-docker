@@ -1,0 +1,41 @@
+version: "1.0"
+
+services:
+  nginx:
+    image: nginx:latest
+    ports:
+      - "8181:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./laravel-keyword-planner:/var/www/planner
+    depends_on:
+      # - scraper
+      # - trends
+      - planner
+
+  scraper:
+    build:
+      context: ./php-scraper
+      dockerfile: Dockerfile
+    ports:
+      - "25000:3000"
+    # volumes:
+    #   - ./php-scraper:/app
+
+  trends:
+    build:
+      context: ./pytrends-api
+      dockerfile: Dockerfile
+    ports:
+      - "25100:8000"
+    volumes:
+      - ./pytrends-api:/app
+
+  planner:
+    build:
+      context: ./laravel-keyword-planner
+      dockerfile: Dockerfile
+    ports:
+      - "29000:9000"
+    volumes:
+      - ./laravel-keyword-planner:/var/www/planner
