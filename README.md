@@ -65,7 +65,7 @@ docker compose up -d
 | Python  | `/trends/`                           | Health check                 |
 | Python  | `/trends?q=word1,word2`              | Get trends                   |
 | Python  | `/trends/login`                      | Login                        |
-| Python  | `/trends/sheet?q=...`                | Save trends to Google Sheets |
+| Python  | `/trends/sheet?q=...&customer_id=...`| Save trends to Google Sheets | customer_id is optional. Default customer_id is set on 5872432115
 | Node    | `/scraper/api/get-data?category=URL` | Scrape category page         |
 
 

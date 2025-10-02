@@ -35,7 +35,7 @@ def login():
     flow = Flow.from_client_secrets_file(
         "credentials.json",
         scopes=app.config['SCOPES'],
-        redirect_uri="http://localhost:8181/trends/callback"
+        redirect_uri=app.config['CALLBACK_URL']
     )
 
     auth_url, state = flow.authorization_url(
@@ -57,7 +57,7 @@ def callback():
         "credentials.json",
         scopes=app.config['SCOPES'],
         state=state,
-        redirect_uri="http://localhost:8181/trends/callback"
+        redirect_uri=app.config['CALLBACK_URL']
     )
     # Важно: передаем сохраненный code_verifier
     code_verifiers = session.get('code_verifiers', {})

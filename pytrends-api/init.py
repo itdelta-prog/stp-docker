@@ -10,10 +10,13 @@ from google_auth_oauthlib.flow import Flow
 import os 
 import config
 import requests
+import logging
 
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
 app = Flask(__name__)
+app.logger.setLevel(logging.ERROR)
+
 
 app.config.from_object('config.Config')
 
