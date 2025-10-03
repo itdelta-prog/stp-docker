@@ -22,6 +22,14 @@ def home():
 def login():
     return redirect(auth.login())
 
+@app.route("/logout")
+def logout():
+    try:
+        os.remove('token.json')
+    except OSError:
+        pass
+    return redirect('/')
+
 @app.route("/callback")
 def callback():
     try:
