@@ -39,6 +39,7 @@ docker run -p 25001:8000 pytrends-api
 
 * **GET /** → health check
 * **GET /login** → Google OAuth2 login
+* **GET /logout** → Google OAuth2 logout
 * **GET /callback** → OAuth2 callback
 * **GET /trends?q=keyword** → get Google Trends data
 * **GET /sheet?q=keyword** → save data to Google Sheets
