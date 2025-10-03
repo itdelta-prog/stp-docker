@@ -33,7 +33,7 @@ def callback():
 @app.route('/sheet')
 def save_in_sheet():
     if auth.creds() is None: 
-        return redirect(app.config('LOGIN_URL'))
+        return redirect(app.config['LOGIN_URL'])
     # get query parameters
     q = request.args.get('q')
     customer_id = request.args.get('customer_id', '5872432115')
