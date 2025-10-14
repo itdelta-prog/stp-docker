@@ -89,12 +89,12 @@ class GoogleKeywordPlannerService
             // See https://developers.google.com/google-ads/api/reference/data/geotargets for
             // the list of geo target IDs.
             // Geo target constant 2840 is for USA.
-            'geo_target_constants' => [ResourceNames::forGeoTargetConstant(2036)],
+            'geo_target_constants' => [ResourceNames::forGeoTargetConstant(2203)],
             'keyword_plan_network' => KeywordPlanNetwork::GOOGLE_SEARCH,
             // https://developers.google.com/google-ads/api/reference/data/codes-formats#languages
             // for the list of language constant IDs.
             // Language constant 1000 is for English.
-            'language' => ResourceNames::forLanguageConstant(1000)
+            'language' => ResourceNames::forLanguageConstant(1021)
         ]);
     }
 
