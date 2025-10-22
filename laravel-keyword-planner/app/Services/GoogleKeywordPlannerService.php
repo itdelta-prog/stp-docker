@@ -89,7 +89,7 @@ class GoogleKeywordPlannerService
     {
         $start = new YearMonth([
             'year' => now()->subYear(4)->year,
-            'month' => now()->subMonth()->month + 1
+            'month' => now()->subYear(4)->startOfYear()->month + 1
         ]);
 
         $end = new YearMonth([
