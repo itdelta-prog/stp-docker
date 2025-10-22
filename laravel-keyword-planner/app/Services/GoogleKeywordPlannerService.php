@@ -7,12 +7,15 @@ use Google\Ads\GoogleAds\Lib\OAuth2TokenBuilder;
 use Google\Ads\GoogleAds\Lib\V21\GoogleAdsClient;
 use Google\Ads\GoogleAds\Util\V21\ResourceNames;
 use Google\Ads\GoogleAds\Lib\V21\GoogleAdsClientBuilder;
+use Google\Ads\GoogleAds\V21\Common\HistoricalMetricsOptions;
+use Google\Ads\GoogleAds\V21\Common\YearMonthRange;
 use Google\Ads\GoogleAds\V21\Services\GenerateKeywordHistoricalMetricsRequest;
 use Google\Ads\GoogleAds\V21\Services\GenerateKeywordHistoricalMetricsResult;
 use Google\Ads\GoogleAds\V21\Enums\KeywordPlanCompetitionLevelEnum\KeywordPlanCompetitionLevel;
 use Google\Ads\GoogleAds\V21\Enums\KeywordPlanNetworkEnum\KeywordPlanNetwork;
 use Google\Ads\GoogleAds\V21\Enums\MonthOfYearEnum\MonthOfYear;
 use Google\Ads\GoogleAds\V21\Common\MonthlySearchVolume;
+use Google\Ads\GoogleAds\V21\Common\YearMonth;
 use Google\Ads\GoogleAds\V21\Services\CreateCustomerClientRequest;
 use Google\Ads\GoogleAds\V21\Services\ListAccessibleCustomersRequest;
 use Google\Ads\GoogleAds\V21\Resources\Customer;
@@ -35,7 +38,8 @@ class GoogleKeywordPlannerService
         return $this->googleAdsClient()->getKeywordPlanIdeaServiceClient();
     }
 
-    public function listCustomers() {
+    public function listCustomers()
+    {
         $customerService = $this->googleAdsClient()->getCustomerServiceClient();
         $accesssibleCustomers = $customerService->listAccessibleCustomers(new ListAccessibleCustomersRequest());
         // Iterates over all accessible customers' resource names and prints them.
@@ -62,7 +66,7 @@ class GoogleKeywordPlannerService
             // 'final_url_suffix' => 'keyword={keyword}&matchtype={matchtype}&adgroupid={adgroupid}'
         ]);
         $managerCustomerId = config('services.google-ads.login_customer_id', null);
-        if(!$managerCustomerId)
+        if (!$managerCustomerId)
             throw new Exception('manager customer id is null!');
         // Issues a mutate request to create an account
         $customerServiceClient = $this->googleAdsClient()->getCustomerServiceClient();
@@ -72,7 +76,7 @@ class GoogleKeywordPlannerService
 
         $res = sprintf(
             'Created a customer with resource name "%s" under the manager account with '
-            . 'customer ID %s',
+                . 'customer ID %s',
             $response->getResourceName(),
             $managerCustomerId,
         );
@@ -83,6 +87,17 @@ class GoogleKeywordPlannerService
 
     public function generateKeywordHistoricalMetricsRequest(int $customer_id, array $keywords = [])
     {
+        $start = new YearMonth([
+            'year' => now()->subYear(4)->year,
+            'month' => now()->subMonth()->month + 1
+        ]);
+
+        $end = new YearMonth([
+            'year' => now()->year,
+            'month' => now()->subMonth()->month + 1
+        ]);
+
+
         return new GenerateKeywordHistoricalMetricsRequest([
             'customer_id' => $customer_id,
             'keywords' => $keywords,
@@ -94,7 +109,13 @@ class GoogleKeywordPlannerService
             // https://developers.google.com/google-ads/api/reference/data/codes-formats#languages
             // for the list of language constant IDs.
             // Language constant 1000 is for English.
-            'language' => ResourceNames::forLanguageConstant(1021)
+            'language' => ResourceNames::forLanguageConstant(1021),
+            'historical_metrics_options' => new HistoricalMetricsOptions([
+                'year_month_range' => new YearMonthRange([
+                    'start' => $start,
+                    'end' => $end,
+                ])
+            ]),
         ]);
     }
 
