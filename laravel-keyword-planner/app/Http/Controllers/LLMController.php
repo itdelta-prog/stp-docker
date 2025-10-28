@@ -21,15 +21,15 @@ class LLMController extends Controller
             'keyword' => 'required|string|max:255',
         ]);
         try {
-            // $keyword = $validated['keyword'];
-            // $defaultPrompt = "Find category on Heureka.cz with product type $keyword and return ONLY link to it.";
-            // $response = $this->client->responses()->create([
-            //     'model' => 'gpt-4o',
-            //     'input' => $defaultPrompt,
-            // ]);
+             $keyword = $validated['keyword'];
+             $defaultPrompt = "Find category on Heureka.cz with product type $keyword and return ONLY link to it. You should provide link as text. Only link. Nothing more.";
+             $response = $this->client->responses()->create([
+                 'model' => 'gpt-4o',
+                 'input' => $defaultPrompt,
+            ]);
 
-            // $link =  $response->outputText;
-            $link = "https://mobilni-telefony.heureka.cz/?utm_source=chatgpt.com";
+            $link =  $response->outputText;
+            //$link = "https://mobilni-telefony.heureka.cz/?utm_source=chatgpt.com";
             
             return response()->json([
                 'message' => $link,

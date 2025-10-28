@@ -35,7 +35,7 @@ export default function Dashboard() {
     const handleGenerateGoogleXlsx = async () => {
         try {
             await axios.get(
-                `http://nginx:80/trends/sheet?q=${keyword}&cat_url=${success}`
+                `http://tool.nextvision.cz:8181/trends/sheet?q=${keyword}&cat_url=${success}`
             );
         } catch (e) {
             console.error(e);

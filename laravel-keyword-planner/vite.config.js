@@ -14,8 +14,12 @@ export default defineConfig({
     ],
     server: {
         host: "0.0.0.0",
+        cors: {
+            origin: 'http://tool.nextvision.cz:8181',
+            credentials: true,
+        },
         hmr: {
-            host: 'localhost',   // для браузера
+            host: 'tool.nextvision.cz',   // для браузера
         },
     },
     
