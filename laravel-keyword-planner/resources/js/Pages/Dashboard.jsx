@@ -6,10 +6,12 @@ export default function Dashboard() {
     const [keyword, setKeyword] = useState("");
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
+    const [sheetSuccess, setSheetSuccess] = useState("");
 
     const handleSendKeywordToLLM = async () => {
         setError("");
         setSuccess("");
+        setSheetSuccess("");
 
         try {
             const response = await axios.get(route("llm.send.keyword"), {
@@ -33,10 +35,15 @@ export default function Dashboard() {
     };
 
     const handleGenerateGoogleXlsx = async () => {
+        setError("");
+        setSheetSuccess("");
+
         try {
             await axios.get(
                 `http://tool.nextvision.cz:8181/trends/sheet?q=${keyword}&cat_url=${success}`
             );
+            setSheetSuccess("Google Sheet byl úspěšně vytvořen!");
+            setTimeout(() => setSheetSuccess(""), 3000); // убрать уведомление через 3 секунды
         } catch (e) {
             console.error(e);
             setError("Chyba při vytváření Google Sheet...");
@@ -79,6 +86,12 @@ export default function Dashboard() {
                     {success && (
                         <p className="mt-4 text-center text-sm text-green-600">
                             {success}
+                        </p>
+                    )}
+
+                    {sheetSuccess && (
+                        <p className="mt-4 text-center text-sm text-emerald-600 font-medium">
+                            {sheetSuccess}
                         </p>
                     )}
 
