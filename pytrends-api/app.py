@@ -45,6 +45,7 @@ def save_in_sheet():
     # get query parameters
     q = request.args.get('q')
     customer_id = request.args.get('customer_id', '5872432115')
+    cat_url = request.args.get('cat_url', None)
     
     if not q:
         return jsonify({"error": "Chýba parameter q"}), 400
@@ -70,6 +71,7 @@ def save_in_sheet():
         except requests.exceptions.RequestException as e:
             app.logger.error("Chyba pri získavaní dát z Google Ads Planner: " + str(e))
     
+    # get data from pytrends api
     trends = {}
     try:
         trends, keywords_list = trends_service.build_payload(pytrends=pytrends, q=q)
@@ -79,15 +81,34 @@ def save_in_sheet():
         app.logger.error("Nenašli sa žiadne dáta")
     else:
         trends = trends_service.get_trends(keywords_list=keywords_list, data=trends)
-        
+
+    # get data from node scraper
+    scraper = {};
+    if cat_url:
+        scraper_url = f"{app.config['SCRAPER_URL']}/api/get-data"
+        try:
+            print(cat_url, file=sys.stderr)
+            response = requests.get(scraper_url, params={'category': cat_url})
+            if response.status_code != 200:
+                app.logger.error("Chyba pri získavaní dát z Scraper: " + response.text)
+            scraper = response.json()
+            print(scraper, file=sys.stderr)
+        except e:
+            app.logger.error("Chyba pri získavaní dát z Scraper: " + str(e))
+    
+         
+
+    # common  
     data = {
         'trends': trends,
         'planner': planner_data,
+        'scraper': scraper,
     }
 
     used_services = [
         'trends' if 'trends' in data and data['trends'] and len(data['trends']) > 0 else None,
         'planner' if 'planner' in data and data['planner'] and len(data['planner']) > 0 else None,
+        'scraper' if 'scraper' in data and data['scraper'] and len(data['scraper']) > 0 else None,
     ]
     used_services = list(filter(lambda x: x is not None, used_services))
     used_services_str = '-'.join(used_services) if len(used_services) > 0 else 'no-services'

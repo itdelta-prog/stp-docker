@@ -39,3 +39,18 @@ services:
       - "29000:9000"
     volumes:
       - ./laravel-keyword-planner:/var/www/planner
+      
+  frontend:
+    build:
+      context: ./laravel-keyword-planner
+      dockerfile: frontend.Dockerfile
+    volumes:
+      - ./laravel-keyword-planner:/var/www/planner
+    ports:
+      - "5173:5173"
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+
+    command: sh -c "npm install --legacy-peer-deps && npm run dev"
+
+      

@@ -154,6 +154,7 @@ def planner_in_sheet(spreadsheetId, data, pos={'x':1, 'y':1}, offset_y=0):
           value_input_option="USER_ENTERED",
           _values=monthly_table
       )
+      return pos['y'] + offset_y + 6 + len(monthly_rows);
 
 
 def trends_in_sheet(spreadsheetId, data, pos={'x':1, 'y':1}):
@@ -179,6 +180,47 @@ def trends_in_sheet(spreadsheetId, data, pos={'x':1, 'y':1}):
     update_values(spreadsheet_id=spreadsheetId, range_name=trends_cell_range, value_input_option="USER_ENTERED", _values=trends_data)
     return trends_count
 
+def scraper_in_sheet(spreadsheetId, data, pos={'x':1, 'y':1}, offset_y=0):
+
+    scraper = data['scraper']
+
+    headers = [
+        "category",
+        "topProduct",
+        "priceTop",
+        "productsTotal",
+        "sellersTop",
+        "medianSellersTop10",
+        "reviewsTop",
+        "maxReviewsTop3",
+        "priceMin",
+        "priceMax"
+    ]
+    row = [
+        scraper.get("category", ""),
+        scraper.get("topProduct", ""),
+        scraper.get("priceTop", ""),
+        scraper.get("productsTotal", ""),
+        scraper.get("sellersTop", ""),
+        scraper.get("medianSellersTop10", ""),
+        scraper.get("reviewsTop", ""),
+        scraper.get("maxReviewsTop3", ""),
+        scraper.get("priceMin", ""),
+        scraper.get("priceMax", "")
+    ]
+
+    first_cell = cell_name(pos['x'], pos['y'] + offset_y + 3)
+    last_cell = cell_name(pos['x'] + len(headers) - 1, pos['y'] + offset_y + 4)
+    scraper_cell_range = f"{first_cell}:{last_cell}"
+
+    update_values(
+        spreadsheet_id=spreadsheetId,
+        range_name=scraper_cell_range,
+        value_input_option="USER_ENTERED",
+        _values=[headers, row]
+    )
+    return offset_y + 4
+
 def save(data, title="spreadsheet", pos={'x':1, 'y':1}):
   try:
     spreadsheetId = create(title)
@@ -193,4 +235,7 @@ def save(data, title="spreadsheet", pos={'x':1, 'y':1}):
     offset_y += trends_in_sheet(spreadsheetId, data, pos=pos)
   # planner part
   if 'planner' in data.keys() and data['planner'] is not None and len(data['planner']) > 0:
-    planner_in_sheet(spreadsheetId, data, pos=pos, offset_y=offset_y)
+    offset_y = planner_in_sheet(spreadsheetId, data, pos=pos, offset_y=offset_y)
+
+  if 'scraper' in data.keys() and data['scraper'] is not None and len(data['scraper']) > 0:
+    scraper_in_sheet(spreadsheetId, data, pos=pos, offset_y=offset_y)

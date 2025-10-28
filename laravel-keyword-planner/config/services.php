@@ -39,4 +39,8 @@ return [
         'login_customer_id' => env('LOGIN_CUSTOMER_ID'),
     ],
 
+    'openai' => [
+        'api_key' => env('OPENAI_API_KEY', null),
+    ] 
+
 ];
