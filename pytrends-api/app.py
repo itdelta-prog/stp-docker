@@ -93,7 +93,7 @@ def save_in_sheet():
                 app.logger.error("Chyba pri získavaní dát z Scraper: " + response.text)
             scraper = response.json()
             print(scraper, file=sys.stderr)
-        except e:
+        except Exception as e:
             app.logger.error("Chyba pri získavaní dát z Scraper: " + str(e))
     
          
