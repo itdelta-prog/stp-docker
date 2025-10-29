@@ -10,6 +10,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "brick/money": "^0.10.3",
         "googleads/google-ads-php": "*",
         "inertiajs/inertia-laravel": "^2.0",
         "laravel/framework": "^12.0",

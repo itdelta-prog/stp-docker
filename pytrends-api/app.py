@@ -113,7 +113,7 @@ def save_in_sheet():
     used_services = list(filter(lambda x: x is not None, used_services))
     used_services_str = '-'.join(used_services) if len(used_services) > 0 else 'no-services'
     date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    google_sheets_service.save(data, title=f"sevices-{used_services_str}-kwords-{q}-date-{date}", pos={'x':1, 'y':1})
+    google_sheets_service.save(data, title=f"services-{used_services_str}-kwords-{q}-date-{date}", pos={'x':1, 'y':1})
 
     return "API je v poriadku, použite /trends?q=sluchátka"
 

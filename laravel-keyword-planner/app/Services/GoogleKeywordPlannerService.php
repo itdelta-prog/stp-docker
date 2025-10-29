@@ -2,6 +2,10 @@
 
 namespace App\Services;
 
+use Brick\Math\RoundingMode;
+use Brick\Money\CurrencyConverter;
+use Brick\Money\ExchangeRateProvider\ConfigurableProvider;
+use Brick\Money\Money;
 use Exception;
 use Google\Ads\GoogleAds\Lib\OAuth2TokenBuilder;
 use Google\Ads\GoogleAds\Lib\V21\GoogleAdsClient;
@@ -149,15 +153,16 @@ class GoogleKeywordPlannerService
                 ? sprintf("%d", $metrics->getCompetitionIndex())
                 : "'none'";
 
+            $provider = new ConfigurableProvider();
+            $convertor = new CurrencyConverter($provider);
+            $provider->setExchangeRate('USD', "CZK", '20.89');
+            $percentile_20th_usd = Money::of(round((Int)$metrics->getLowTopOfPageBidMicros() / 1000000, 2), 'USD');
             // Top of page bid low range (20th percentile) in micros for the keyword.
-            $percentile_20th = $metrics->hasLowTopOfPageBidMicros()
-                ? sprintf("%d", $metrics->getLowTopOfPageBidMicros())
-                : "'none'";
+            $percentile_20th = 'CZK' . (string)$convertor->convert($percentile_20th_usd, 'CZK', roundingMode: RoundingMode::UP)->getAmount();
 
             // Top of page bid high range (80th percentile) in micros for the keyword.
-            $percentile_80th = $metrics->hasHighTopOfPageBidMicros()
-                ? sprintf("%d", $metrics->getHighTopOfPageBidMicros())
-                : "'none'";
+            $percentile_80th_usd = Money::of(round((Int)$metrics->getHighTopOfPageBidMicros() / 1000000, 2), 'USD');
+            $percentile_80th = 'CZK' . (string)$convertor->convert($percentile_80th_usd, 'CZK', roundingMode: RoundingMode::UP)->getAmount();
 
             // Approximate number of searches on this query for the past twelve months.
             $monthlySearchVolumes =
