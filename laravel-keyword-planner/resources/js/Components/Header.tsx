@@ -9,12 +9,17 @@ export default function Header() {
                 <GlobeIcon className="mr-2 size-6 bg-[#7700ff] fill-white text-[#7700ff] ring-2 ring-[#7700ff]" />
                 {"SCRAPER".toUpperCase()}
             </div>
+            <div className="flex rubik items-center gap-2 text-sm">
+            {/* <div>
+                Log in Google
+            </div> */}
             <div
                 onClick={() => router.post(route("logout"))}
                 className="rubik flex cursor-pointer items-center rounded-xs p-2 text-sm hover:bg-gray-100"
-            >
-                {"EXIT"}
+                >
+                {"Exit"}
                 <RectangleGroupIcon className="ml-2 size-5 fill-black" />
+            </div>
             </div>
         </div>
     );
