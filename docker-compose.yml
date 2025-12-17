@@ -1,13 +1,27 @@
 version: "1.0"
 
 services:
+
+  # certbot:
+  #   image: certbot/certbot
+  #   volumes:
+  #     - ./certbot/www:/var/www/certbot
+  #     - ./certbot/conf:/etc/letsencrypt
+  #   depends_on:
+  #     # - scraper
+  #     # - trends
+  #     - nginx
+
   nginx:
     image: nginx:latest
     ports:
-      - "8181:80"
+      - "80:80"
+      - "443:443"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./laravel-keyword-planner:/var/www/planner
+      - ./certbot-www/www:/var/www/certbot
+      - /etc/letsencrypt:/etc/letsencrypt:ro
     depends_on:
       # - scraper
       # - trends
