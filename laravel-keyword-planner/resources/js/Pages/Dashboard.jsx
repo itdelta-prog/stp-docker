@@ -49,7 +49,7 @@ export default function Dashboard() {
 
     try {
       await axios.get(
-        `http://tool.nextvision.cz:8181/trends/sheet?q=${keyword}&cat_url=${success}`
+        `https://tool.nextvision.cz/trends/sheet?q=${keyword}&cat_url=${success}`
       );
 
       setSheetSuccess("Google Sheet byl úspěšně vytvořen!");
