@@ -33,8 +33,9 @@ services:
       dockerfile: Dockerfile
     ports:
       - "25000:3000"
-    # volumes:
-    #   - ./php-scraper:/app
+    volumes:
+      - ./php-scraper:/app
+    command: sh -c "npm install && npm start --host=0.0.0.0 --port=3000"
 
   trends:
     build:
