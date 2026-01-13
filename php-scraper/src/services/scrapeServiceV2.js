@@ -83,7 +83,7 @@ export const scrapeData = async (category, providedBrowser = null, maxRetries = 
             const sellersTop = (() => {
               const el = productInfo?.querySelector('.c-product__shops');
               const match = el.textContent?.replace(/\s/g, '').match(/\d+/);
-              return match ? Number(match[0]) : null;
+              return match ? Number(match[0]) : 1;
             })();
   
             const reviewsTopText = productInfo?.querySelector('.c-product__review-count span')
