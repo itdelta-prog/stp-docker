@@ -92,7 +92,7 @@ class GoogleKeywordPlannerService
     public function generateKeywordHistoricalMetricsRequest(int $customer_id, array $keywords = [])
     {
 
-        $startMonth = now()->subYear(1)->startOfMonth();
+        $startMonth = now()->subYear(4)->startOfMonth();
         $start = new YearMonth([
             'year' => $startMonth->year,
             'month' => $startMonth->month + 1,
