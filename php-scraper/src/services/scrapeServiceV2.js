@@ -50,58 +50,68 @@ export const scrapeData = async (category, providedBrowser = null, maxRetries = 
     } catch (e) {}
 
       //Parsing
-
-      await page.waitForSelector('li.e-badge--top', { timeout: 20000 });
-
-      // Extract top product info (name, price, sellers count, reviews)
-      const topProductData = await page.evaluate(() => {
-          const topBadges = Array.from(document.querySelectorAll('li.e-badge--top'));
-          return topBadges.map((badge) => {
-            const topNumberText = badge.textContent.trim();
-            const topNumberMatch = topNumberText.match(/\d+/);
-            const topNumber = topNumberMatch ? Number(topNumberMatch[0]) : null;
-
-            if(!topNumber) {
-              return null;
-            }
-
-            const productInfo = badge?.closest('.c-product__info');
+      let topProductData = []
+      try {
+        await page.waitForSelector('li.e-badge--top', { timeout: 20000 });
   
-            if(!productInfo) return null;
+        // Extract top product info (name, price, sellers count, reviews)
+        topProductData = await page.evaluate(() => {
+            const topBadges = Array.from(document?.querySelectorAll('li.e-badge--top') ?? []);
+            return topBadges.map((badge) => {
+              const topNumberText = badge.textContent.trim();
+              const topNumberMatch = topNumberText.match(/\d+/);
+              const topNumber = topNumberMatch ? Number(topNumberMatch[0]) : null;
   
-            const link = productInfo?.querySelector('.c-product__link');
-            const productName = link?.textContent?.trim() || null;
+              if(!topNumber) {
+                return null;
+              }
   
-            const priceText = productInfo?.querySelector('.c-product__price')
-              .textContent
-              .trim();
+              const productInfo = badge?.closest('.c-product__info');
+    
+              if(!productInfo) return null;
+    
+              const link = productInfo?.querySelector('.c-product__link');
+              const productName = link?.textContent?.trim() || null;
+    
+              const priceText = productInfo?.querySelector('.c-product__price')
+                .textContent
+                .trim();
+  
+              const reviewsPercentage = productInfo.querySelector('.c-rating-widget__value')?.textContent?.trim() ?? '';
+              const reviewNumMatch = reviewsPercentage.match(/\d+/);
+              const reviewNum = reviewNumMatch ? Number(reviewNumMatch[0]) : null;
+  
+              const sellersTop = (() => {
+                const el = productInfo?.querySelector('.c-product__shops');
+                const match = el.textContent?.replace(/\s/g, '').match(/\d+/);
+                return match ? Number(match[0]) : 1;
+              })();
+    
+              const reviewsTopText = productInfo?.querySelector('.c-product__review-count span')
+                ?.textContent
+                .trim();
+    
+              const reviewsTop = Number(reviewsTopText?.replace(/[^\d]/g, ''));
+    
+              return {
+                topNumber,
+                productName,
+                priceText,
+                sellersTop,
+                reviewsTop,
+                reviewNum,
+              }
+            })?.filter(Boolean).sort((a, b) => a.topNumber - b.topNumber) ?? [];
+        })
+      } catch(e) {
+        if (attempt >= maxRetries) {
+          topProductData = []
+        } else {
+          console.warn(`Attempt ${attempt} failed: ${error.message}`, error);
 
-            const reviewsPercentage = productInfo.querySelector('.c-rating-widget__value')?.textContent?.trim() ?? '';
-            const reviewNumMatch = reviewsPercentage.match(/\d+/);
-            const reviewNum = reviewNumMatch ? Number(reviewNumMatch[0]) : null;
-
-            const sellersTop = (() => {
-              const el = productInfo?.querySelector('.c-product__shops');
-              const match = el.textContent?.replace(/\s/g, '').match(/\d+/);
-              return match ? Number(match[0]) : 1;
-            })();
-  
-            const reviewsTopText = productInfo?.querySelector('.c-product__review-count span')
-              ?.textContent
-              .trim();
-  
-            const reviewsTop = Number(reviewsTopText?.replace(/[^\d]/g, ''));
-  
-            return {
-              topNumber,
-              productName,
-              priceText,
-              sellersTop,
-              reviewsTop,
-              reviewNum,
-            }
-          }).filter(Boolean).sort((a, b) => a.topNumber - b.topNumber);
-      })
+          continue
+        }
+      }
 
       const topBadgesWithPrice = topProductData.map((data) => {
         return {
@@ -170,7 +180,7 @@ export const scrapeData = async (category, providedBrowser = null, maxRetries = 
         categoryProductsTotal: productsTotal,
         categoryPriceMin: firstProductPriceMin,
         categoryPriceMax: firstProductPriceMax,
-        productsTop: formattedTopBadges.slice(0, 5),
+        productsTop: formattedTopBadges.length >=5 ? formattedTopBadges.slice(0, 5) : [],
       };
 
       // if not needed null values
