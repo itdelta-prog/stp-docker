@@ -1,4 +1,4 @@
-import { scrapeData } from '../services/scrapeServiceV2.js';
+import { scrapeData } from '../services/scrapeServiceV21.js';
 
 export const getData = async (req, res) => {
   const { category } = req.query;
