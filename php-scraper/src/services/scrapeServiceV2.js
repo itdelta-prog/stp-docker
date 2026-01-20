@@ -15,7 +15,7 @@ async function getFirstProductPrice(page) {
   return  parsePriceRange(priceText);
 }
 
-export const scrapeData = async (category, providedBrowser = null, maxRetries = 3) => {
+export const scrapeData = async (category, providedBrowser = null, maxRetries = 1) => {
   let browser;
   let page;
   let shouldCloseBrowser;
