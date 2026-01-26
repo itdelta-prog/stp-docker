@@ -179,6 +179,7 @@ export const scrapeData = async (category, maxRetries = 3) => {
   const { priceMax: firstProductPriceMax } = await getFirstProductPrice(page);
 
   const formattedTopBadges = topBadgesWithPrice.map((data) => {
+    const topStr = `TOP ${data.topNumber}`
     return {
       name: data.productName,
       priceMin: data.priceMin,
@@ -186,8 +187,11 @@ export const scrapeData = async (category, maxRetries = 3) => {
       reviewsNumber: data.reviewsTop,
       reviewsPercentage: data.reviewNum,
       sellers: data.sellersTop,
+      position: topStr,
     };
   });
+
+  const maxLenOfTops = Math.min(5, formattedTopBadges?.length ?? 0)
 
   const result = {
     category: category.replace(/^https:\/\//, "").split(".")[0],
@@ -195,7 +199,7 @@ export const scrapeData = async (category, maxRetries = 3) => {
     categoryPriceMin: firstProductPriceMin,
     categoryPriceMax: firstProductPriceMax,
     productsTop:
-      formattedTopBadges.length >= 5 ? formattedTopBadges.slice(0, 5) : [],
+      formattedTopBadges?.length > 0 ? formattedTopBadges.slice(0, maxLenOfTops) : [],
   };
 
   await page.close();
