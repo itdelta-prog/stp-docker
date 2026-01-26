@@ -164,15 +164,18 @@ export const scrapeData = async (category, maxRetries = 3) => {
     page.waitForNavigation({ waitUntil: "domcontentloaded" }),
     sortLinks[1].click(),
   ]);
+  await new Promise(r => setTimeout(r, 2000));
 
   await page.waitForSelector(".c-product", { timeout: 20000 });
 
   const { priceMin: firstProductPriceMin } = await getFirstProductPrice(page);
+  
 
   await Promise.all([
     page.waitForNavigation({ waitUntil: "domcontentloaded" }),
     sortLinks[3].click(),
   ]);
+  await new Promise(r => setTimeout(r, 2000));
 
   await page.waitForSelector(".c-product", { timeout: 20000 });
 
