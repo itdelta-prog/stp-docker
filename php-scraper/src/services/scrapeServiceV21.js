@@ -161,8 +161,14 @@ export const scrapeData = async (category, maxRetries = 3) => {
   // in a Promise.all() if navigation is expected.
 
   await Promise.all([
-    page.waitForNavigation({ waitUntil: "domcontentloaded" }),
-    sortLinks[1].click(),
+    page.waitForNavigation({ waitUntil: "domcontentloaded", timeout: 20000 })
+          .then(res => {
+            console.log(`[DONE] Navigation event fired. Status: ${res ? res.status() : 'N/A'}`);
+            return res;
+          }),
+        
+    // Action promise
+    sortLinks[1].click().then(() => console.log(`[INFO] Click executed successfully.`))
   ]);
   await new Promise(r => setTimeout(r, 2000));
 
@@ -172,8 +178,14 @@ export const scrapeData = async (category, maxRetries = 3) => {
   
 
   await Promise.all([
-    page.waitForNavigation({ waitUntil: "domcontentloaded" }),
-    sortLinks[3].click(),
+    page.waitForNavigation({ waitUntil: "domcontentloaded", timeout: 20000 })
+          .then(res => {
+            console.log(`[DONE] Navigation event fired. Status: ${res ? res.status() : 'N/A'}`);
+            return res;
+          }),
+        
+    // Action promise
+    sortLinks[3].click().then(() => console.log(`[INFO] Click executed successfully.`))
   ]);
   await new Promise(r => setTimeout(r, 2000));
 
