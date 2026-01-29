@@ -50,10 +50,16 @@ export const scrapeData = async (category, maxRetries = 3) => {
 
   let browser;
   let page;
-  const { page: currPage, browser: currBrowser } =
-    await launchBrowser(category);
-  page = currPage;
-  browser = currBrowser;
+
+  try {
+    const { page: currPage, browser: currBrowser } =
+      await launchBrowser(category);
+    page = currPage;
+    browser = currBrowser;
+  } catch(err) {
+    console.log("error when launch browser in scrapeData");
+    throw err;
+  }
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
