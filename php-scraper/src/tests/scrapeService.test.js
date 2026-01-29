@@ -1,6 +1,6 @@
 import puppeteer from "puppeteer";
 import { performance } from 'perf_hooks';
-import { scrapeData } from "../services/scrapeService.js";
+import { scrapeData } from "../services/scrapeServiceV21.js";
 import { closeBrowser } from "../utils/puppeteerHelper.js";
 
 const urls = [
@@ -47,13 +47,12 @@ function delay(ms) {
 }
 // Serial test
 async function runMultipleScrapers(urls) {
-    const {browser} = await puppeteer.launch();
     const startTime = performance.now();
     try {
         for (let i = 0; i < urls.length; i++) {
             const url = urls[i];
             try {
-                const result = await scrapeData(url, browser);
+                const result = await scrapeData(url);
                 console.log(`Result for page ${i + 1}: `, result);
             } catch (err) {
                 console.error(`Error durring scrapping page ${i+1} ${url}:`, err);
@@ -64,7 +63,6 @@ async function runMultipleScrapers(urls) {
             }
         }
     } finally {
-        await closeBrowser(browser);
         const endTime = performance.now();
         const duration = endTime - startTime;
         console.log(`Total time: ${(duration / 1000).toFixed(2)} s`);

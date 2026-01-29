@@ -1,6 +1,19 @@
+import { join } from "path";
 import { calculateMedian } from "../utils/calculateMedianHelper.js";
 import { parsePriceRange } from "../utils/priceHelper.js";
 import { launchBrowser, closeBrowser } from "../utils/puppeteerHelper.js";
+import fs from "fs";
+
+async function makeErrorScreenshots(page, filePath) {
+  const errorScreensDir = "./error-screenshots";
+  if (!fs.existsSync(errorScreensDir)) {
+    fs.mkdirSync(errorScreensDir);
+  }
+  await page.screenshot({
+    path: join(errorScreensDir, filePath),
+    fullPage: true,
+  });
+}
 
 async function getFirstProductPrice(page) {
   const priceText = await page.evaluate(() => {
@@ -33,9 +46,12 @@ export const scrapeData = async (category, maxRetries = 3) => {
     throw new Error("Invalid category URL");
   }
 
+  const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+
   let browser;
   let page;
-  const { page: currPage, browser: currBrowser } = await launchBrowser(category);
+  const { page: currPage, browser: currBrowser } =
+    await launchBrowser(category);
   page = currPage;
   browser = currBrowser;
 
@@ -51,11 +67,13 @@ export const scrapeData = async (category, maxRetries = 3) => {
         });
         await page.click('button[aria-label="Souhlasit a zavřít"]');
       } catch (e) {
+        await makeErrorScreenshots(page, `cookies-modal-error-${timestamp}.png`);
         console.warn("Cookies modal not found:", e);
       }
       break;
     } catch (error) {
       console.error(`Attempt ${attempt} - Error loading page:`, error);
+      await makeErrorScreenshots(page, `attempt-error-${timestamp}.png`);
       await page.close();
       await closeBrowser(browser);
       if (attempt === maxRetries) {
@@ -129,6 +147,7 @@ export const scrapeData = async (category, maxRetries = 3) => {
       );
     });
   } catch (e) {
+    await makeErrorScreenshots(page, `top-product-data-error-${timestamp}.png`);
     topProductData = [];
   }
 
@@ -159,65 +178,87 @@ export const scrapeData = async (category, maxRetries = 3) => {
 
   // To avoid race conditions, always combine click() and waitForNavigation()
   // in a Promise.all() if navigation is expected.
+  try {
+    await Promise.all([
+      page
+        .waitForNavigation({ waitUntil: "domcontentloaded", timeout: 20000 })
+        .then((res) => {
+          console.log(
+            `[DONE] Navigation event fired. Status: ${res ? res.status() : "N/A"}`,
+          );
+          return res;
+        }),
 
-  await Promise.all([
-    page.waitForNavigation({ waitUntil: "domcontentloaded", timeout: 20000 })
-          .then(res => {
-            console.log(`[DONE] Navigation event fired. Status: ${res ? res.status() : 'N/A'}`);
-            return res;
-          }),
-        
-    // Action promise
-    sortLinks[1].click().then(() => console.log(`[INFO] Click executed successfully.`))
-  ]);
-  await new Promise(r => setTimeout(r, 2000));
+      // Action promise
+      sortLinks[1]
+        .click()
+        .then(() => console.log(`[INFO] Click executed successfully.`)),
+    ]);
+    await new Promise((r) => setTimeout(r, 2000));
 
-  await page.waitForSelector(".c-product", { timeout: 20000 });
+    await page.waitForSelector(".c-product", { timeout: 20000 });
 
-  const { priceMin: firstProductPriceMin } = await getFirstProductPrice(page);
-  
+    const { priceMin: firstProductPriceMin } = await getFirstProductPrice(page);
 
-  await Promise.all([
-    page.waitForNavigation({ waitUntil: "domcontentloaded", timeout: 20000 })
-          .then(res => {
-            console.log(`[DONE] Navigation event fired. Status: ${res ? res.status() : 'N/A'}`);
-            return res;
-          }),
-        
-    // Action promise
-    sortLinks[3].click().then(() => console.log(`[INFO] Click executed successfully.`))
-  ]);
-  await new Promise(r => setTimeout(r, 2000));
+    await Promise.all([
+      page
+        .waitForNavigation({ waitUntil: "domcontentloaded", timeout: 20000 })
+        .then((res) => {
+          console.log(
+            `[DONE] Navigation event fired. Status: ${res ? res.status() : "N/A"}`,
+          );
+          return res;
+        }),
 
-  await page.waitForSelector(".c-product", { timeout: 20000 });
+      // Action promise
+      sortLinks[3]
+        .click()
+        .then(() => console.log(`[INFO] Click executed successfully.`)),
+    ]);
+    await new Promise((r) => setTimeout(r, 2000));
+    await page.waitForSelector(".c-product", { timeout: 20000 });
 
-  const { priceMax: firstProductPriceMax } = await getFirstProductPrice(page);
+    const { priceMax: firstProductPriceMax } = await getFirstProductPrice(page);
 
-  const formattedTopBadges = topBadgesWithPrice.map((data) => {
-    const topStr = `TOP ${data.topNumber}`
-    return {
-      name: data.productName,
-      priceMin: data.priceMin,
-      priceMax: data.priceMax,
-      reviewsNumber: data.reviewsTop,
-      reviewsPercentage: data.reviewNum,
-      sellers: data.sellersTop,
-      position: topStr,
+    const formattedTopBadges = topBadgesWithPrice.map((data) => {
+      const topStr = `TOP ${data.topNumber}`;
+      return {
+        name: data.productName,
+        priceMin: data.priceMin,
+        priceMax: data.priceMax,
+        reviewsNumber: data.reviewsTop,
+        reviewsPercentage: data.reviewNum,
+        sellers: data.sellersTop,
+        position: topStr,
+      };
+    });
+
+    const maxLenOfTops = Math.min(5, formattedTopBadges?.length ?? 0);
+
+    const result = {
+      category: category.replace(/^https:\/\//, "").split(".")[0],
+      categoryProductsTotal: productsTotal,
+      categoryPriceMin: firstProductPriceMin,
+      categoryPriceMax: firstProductPriceMax,
+      productsTop:
+        formattedTopBadges?.length > 0
+          ? formattedTopBadges.slice(0, maxLenOfTops)
+          : [],
     };
-  });
 
-  const maxLenOfTops = Math.min(5, formattedTopBadges?.length ?? 0)
-
-  const result = {
-    category: category.replace(/^https:\/\//, "").split(".")[0],
-    categoryProductsTotal: productsTotal,
-    categoryPriceMin: firstProductPriceMin,
-    categoryPriceMax: firstProductPriceMax,
-    productsTop:
-      formattedTopBadges?.length > 0 ? formattedTopBadges.slice(0, maxLenOfTops) : [],
-  };
-
-  await page.close();
-  await closeBrowser(browser);
-  return result;
+    await page.close();
+    await closeBrowser(browser);
+    return result;
+  } catch (e) {
+    try {
+      await makeErrorScreenshots(page, `nav-min-max-data-error-${timestamp}.png`);
+    } catch (screenError) {
+      await page.close();
+      await closeBrowser(browser);
+      throw screenError;
+    }
+    await page.close();
+    await closeBrowser(browser);
+    throw e;
+  }
 };
