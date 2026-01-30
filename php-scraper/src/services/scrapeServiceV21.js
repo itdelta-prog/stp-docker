@@ -185,6 +185,7 @@ export const scrapeData = async (category, maxRetries = 3) => {
   // To avoid race conditions, always combine click() and waitForNavigation()
   // in a Promise.all() if navigation is expected.
   try {
+    await new Promise((r) => setTimeout(r, 2000));
     await Promise.all([
       page
         .waitForNavigation({ waitUntil: "domcontentloaded", timeout: 20000 })
