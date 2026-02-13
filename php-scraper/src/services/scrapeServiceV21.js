@@ -29,7 +29,14 @@ async function getFirstProductPrice(page) {
 }
 
 const newPageLoadAttempt = async (browser, category) => {
+
   const page = await browser.newPage();
+  await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36');
+  await page.authenticate({
+    username:process.env.BRIGHTDATA_USERNAME_UNLOCKER, 
+    password:process.env.BRIGHTDATA_PASSWORD_UNLOCKER
+  });
+
   await page.setRequestInterception(true);
   page.on("request", (request) => {
     const resourceType = request.resourceType();
@@ -37,11 +44,13 @@ const newPageLoadAttempt = async (browser, category) => {
       request.abort();
     } else request.continue();
   });
+
   await page.goto(category, { waitUntil: "domcontentloaded" });
   return page;
 };
 
 export const scrapeData = async (category, maxRetries = 3) => {
+  
   if (!category || typeof category !== "string") {
     throw new Error("Invalid category URL");
   }
@@ -52,20 +61,18 @@ export const scrapeData = async (category, maxRetries = 3) => {
   let page;
 
   try {
-    const { page: currPage, browser: currBrowser } =
-      await launchBrowser(category);
-    page = currPage;
+    const { browser: currBrowser } = await launchBrowser(category);
     browser = currBrowser;
-  } catch(err) {
-    console.log("error when launch browser in scrapeData");
-    throw err;
+  } catch (e) {
+    console.error("Error during launch browser: ", e);
+    closeBrowser(browser);
+    throw e;
   }
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      if (attempt > 1) {
         page = await newPageLoadAttempt(browser, category);
-      }
+      
       // Close "Accept cookies modal"
       try {
         await page.waitForSelector('button[aria-label="Souhlasit a zavřít"]', {
@@ -185,43 +192,14 @@ export const scrapeData = async (category, maxRetries = 3) => {
   // To avoid race conditions, always combine click() and waitForNavigation()
   // in a Promise.all() if navigation is expected.
   try {
+    // cheap products
+    await page.goto(`${category}?o=4`)
     await new Promise((r) => setTimeout(r, 2000));
-    await Promise.all([
-      page
-        .waitForNavigation({ waitUntil: "domcontentloaded", timeout: 20000 })
-        .then((res) => {
-          console.log(
-            `[DONE] Navigation event fired. Status: ${res ? res.status() : "N/A"}`,
-          );
-          return res;
-        }),
-
-      // Action promise
-      sortLinks[1]
-        .click()
-        .then(() => console.log(`[INFO] Click executed successfully.`)),
-    ]);
-    await new Promise((r) => setTimeout(r, 2000));
-
     await page.waitForSelector(".c-product", { timeout: 20000 });
-
     const { priceMin: firstProductPriceMin } = await getFirstProductPrice(page);
-
-    await Promise.all([
-      page
-        .waitForNavigation({ waitUntil: "domcontentloaded", timeout: 20000 })
-        .then((res) => {
-          console.log(
-            `[DONE] Navigation event fired. Status: ${res ? res.status() : "N/A"}`,
-          );
-          return res;
-        }),
-
-      // Action promise
-      sortLinks[3]
-        .click()
-        .then(() => console.log(`[INFO] Click executed successfully.`)),
-    ]);
+    
+    // expensive products
+    await page.goto(`${category}?o=5`)
     await new Promise((r) => setTimeout(r, 2000));
     await page.waitForSelector(".c-product", { timeout: 20000 });
 
